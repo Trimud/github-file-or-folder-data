@@ -5,7 +5,7 @@ export default class GetFileOrFolderData {
     static async run(options: Options) {
         // Set defaults
         const path: string = 'GET /repos/:owner/:repo/contents/:path';
-        let req: Request = {
+        const req: Request = {
             mediaType: {
                 format: options.mediaFormat || 'raw'
             },
