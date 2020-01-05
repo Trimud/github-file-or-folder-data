@@ -1,44 +1,36 @@
-"use strict";
-
 import { request } from '@octokit/request';
+import { Options, Request } from "./interfaces";
 
-/**
- * @param {String} token Personal Access Token for private repos
- * @param {String} mediaFormat Media type param, such as `raw`, `html`, or `full`
- * @param {String} owner Repository owner
- * @param {String} repository Repository name
- * @param {String} ref Repository branch (Defaults to default branch for the repo)
- * @param {String} path Path to file
- */
-class Options {
-    constructor(
-        public token: string,
-        public mediaFormat: string,
-        public owner: string,
-        public repository: string,
-        public ref: string,
-        public path: string
-    ) {};
-}
-export default class GetFile {
+export default class GetFileOrFolderData {
     static async run(options: Options) {
-        const result = await request('GET /repos/:owner/:repo/contents/:path', {
-            headers: {
-                authorization: `token ${options.token}`
-            },
+        // Set defaults
+        const path: string = 'GET /repos/:owner/:repo/contents/:path';
+        let req: Request = {
             mediaType: {
-                format: options.mediaFormat
+                format: options.mediaFormat || 'raw'
             },
             owner: options.owner,
             repo: options.repository,
             path: options.path,
-            ref: options.ref,
-            type: 'private'
-        }).catch((error) => {
+            ref: options.ref || 'master',
+            type: options.type
+        };
+
+        // Authorize request with Personal Access Token if repo is private
+        if (options.type === 'private') {
+            req.headers = {
+                authorization: `token ${options.token}`
+            }
+        }
+
+        // Make the call to get file/folder data
+        const result = await request(path, req).catch((error) => {
+            // Log error and exit script
             console.error(`${error}`);
             process.exit(1);
         });
 
+        // Return file/folder data
         return result.data;
     }
 }
