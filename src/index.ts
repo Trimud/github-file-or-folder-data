@@ -24,13 +24,9 @@ export default class GetFileOrFolderData {
         }
 
         // Make the call to get file/folder data
-        const result = await request(path, req).catch((error) => {
-            // Log error and exit script
-            console.error(`${error}`);
-            process.exit(1);
-        });
+        const result = await request(path, req);
 
         // Return file/folder data
-        return result.data;
+        return result;
     }
 }
