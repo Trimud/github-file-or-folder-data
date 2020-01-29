@@ -1,5 +1,8 @@
-import { request } from '@octokit/request';
+import { RequestInterface } from '@octokit/auth-app/dist-types/types';
+import { appAuthentication, personalTokenAuthentication } from './auth';
 import { Options, Request } from "./interfaces";
+
+let result: RequestInterface;
 
 export default class GetFileOrFolderData {
     static async run(options: Options) {
@@ -17,16 +20,21 @@ export default class GetFileOrFolderData {
         };
 
         // Authorize request with Personal Access Token if repo is private
-        if (options.type === 'private') {
-            req.headers = {
-                authorization: `token ${options.token}`
-            }
+        // and authentication type is 'accessToken'
+
+        if (options.authentication === 'accessToken') {
+            result = personalTokenAuthentication(options.token!);
+        } else {
+            result = appAuthentication(options.appID!, options.privateKey!, options.installationID!);
         }
 
-        // Make the call to get file/folder data
-        const result = await request(path, req);
+        const appFunc = async () => {
+            const data = await result(path, req);
+
+            return data;
+        }
 
         // Return file/folder data
-        return result;
+        return appFunc();
     }
 }
