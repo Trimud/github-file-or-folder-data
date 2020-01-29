@@ -37,6 +37,7 @@
   "homepage": "https://github.com/Trimud/github-file-or-folder-data#readme",
   "devDependencies": {
     "@types/jest": "^24.0.25",
+    "@types/node": "^13.1.8",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
     "ts-jest": "^24.2.0",
@@ -48,6 +49,8 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "@octokit/request": "^5.3.1"
+    "@octokit/auth-app": "^2.4.2",
+    "@octokit/request": "^5.3.1",
+    "@types/lru-cache": "^5.1.0"
   }
 }
