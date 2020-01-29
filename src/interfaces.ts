@@ -14,7 +14,7 @@
  * TODO: Make appID, privateKey and installationID required if
  * 'authentication' is set to 'githubApp'
  */
- export interface Options {
+ export interface GHOptions {
     authentication: 'accessToken' | 'githubApp',
     appID?: number,
     privateKey?: string,
@@ -28,7 +28,7 @@
     type?: string;
 }
 
-export interface Request {
+export interface GHRequest {
     token?: string,
     headers?: {
         authorization?: string;

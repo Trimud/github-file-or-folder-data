@@ -1,14 +1,13 @@
-import { RequestInterface } from '@octokit/auth-app/dist-types/types';
-import { appAuthentication, personalTokenAuthentication } from './auth';
-import { Options, Request } from "./interfaces";
-
-let result: RequestInterface;
+// import { appAuthentication } from './auth';
+import { createAppAuth } from '@octokit/auth-app';
+import { request } from '@octokit/request';
+import { GHOptions } from "./interfaces";
 
 export default class GetFileOrFolderData {
-    static async run(options: Options) {
+    static async run(options: GHOptions) {
         // Set defaults
         const path: string = 'GET /repos/:owner/:repo/contents/:path';
-        const req: Request = {
+        let defaultRequest = request.defaults({
             mediaType: {
                 format: options.mediaFormat || 'raw'
             },
@@ -17,24 +16,40 @@ export default class GetFileOrFolderData {
             path: options.path,
             ref: options.ref || 'master',
             type: options.type
-        };
+        });
 
         // Authorize request with Personal Access Token if repo is private
         // and authentication type is 'accessToken'
-
-        if (options.authentication === 'accessToken') {
-            result = personalTokenAuthentication(options.token!);
-        } else {
-            result = appAuthentication(options.appID!, options.privateKey!, options.installationID!);
+        if (options.authentication === 'accessToken' && options.type === 'private') {
+            defaultRequest = defaultRequest.defaults({
+                headers: {
+                    authorization: `token ${options.token}`
+                }
+            });
         }
 
-        const appFunc = async () => {
-            const data = await result(path, req);
+        // Authorize request as Github App Installation
+        if (options.authentication === 'githubApp') {
+            const auth = createAppAuth({
+                id: options.appID!,
+                privateKey: options.privateKey!,
+                installationId: options.installationID!
+            });
 
-            return data;
+            // Set default request header and mediaType
+            defaultRequest = defaultRequest.defaults({
+                request: {
+                    hook: auth.hook
+                },
+                mediaType: {
+                    previews: ['machine-man']
+                }
+            });
         }
 
-        // Return file/folder data
-        return appFunc();
+        // Make the call to get file/folder response
+        const data = await defaultRequest(path);
+
+        return data;
     }
 }
